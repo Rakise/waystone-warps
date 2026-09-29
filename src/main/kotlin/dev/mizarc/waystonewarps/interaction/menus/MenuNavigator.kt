@@ -1,12 +1,18 @@
 package dev.mizarc.waystonewarps.interaction.menus
 
 import org.bukkit.entity.Player
+import java.lang.ref.WeakReference
+import java.util.WeakHashMap
 import kotlin.collections.ArrayDeque
 
 /**
  * A menu hook to store navigated menus and allow for backwards travel.
  */
 class MenuNavigator(private val player: Player) {
+    companion object {
+        // A new compass/waystone session invalidates callbacks from an older dialog.
+        private val activeNavigators = WeakHashMap<Player, WeakReference<MenuNavigator>>()
+    }
     private val menuStack = ArrayDeque<Menu>()
 
     /**
@@ -17,10 +23,19 @@ class MenuNavigator(private val player: Player) {
      *
      * @param menu The menu to open.
      */
-   fun openMenu(menu: Menu) {
+    fun openMenu(menu: Menu) {
+        activeNavigators[player] = WeakReference(this)
         menuStack.addFirst(menu)
         menu.open()
     }
+
+    /** Replace an entry screen with its text prompt without adding an extra back step. */
+    fun replaceMenu(menu: Menu) {
+        if (menuStack.isNotEmpty()) menuStack.removeFirst()
+        openMenu(menu)
+    }
+
+    fun isCurrent(menu: Menu): Boolean = activeNavigators[player]?.get() === this && menuStack.firstOrNull() === menu
 
     /**
      * Opens the previous menu in the navigation stack.

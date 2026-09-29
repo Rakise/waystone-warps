@@ -20,6 +20,6 @@ class WarpMenuCommand: BaseCommand(), KoinComponent {
     @Default
     fun onWarp(player: Player, @Optional backCommand: String? = null) {
         val menuNavigator = MenuNavigator(player)
-        WarpMenu(player, menuNavigator, localizationProvider).open()
+        menuNavigator.openMenu(WarpMenu(player, menuNavigator, localizationProvider))
     }
 }

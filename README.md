@@ -14,7 +14,21 @@ Here are some of the cool features you can expect:
 
 ## Installation
 
+Requires Paper **1.21.8 or newer**. The 26.1.2, 26.2, and 26.3 API lines are covered by the build/test matrix.
+Minecraft 26.x servers require Java 25. Naming, renaming, and search now use native Paper text dialogs;
+the plugin no longer opens InventoryFramework's NMS-backed anvils. Cardboard's implementation of the
+Paper dialog API has not been verified.
+
 Download the latest release (.jar file) from the releases tab and place it in your server's plugins folder. 
+
+For a local build, use JDK 25 and run `./gradlew build` (`.\gradlew.bat build` on Windows).
+Install `build/libs/WaystoneWarps-1.1.2-SNAPSHOT.jar`; the `-plain.jar` is not the distributable plugin.
+The default build targets the 1.21.8 API and emits Java 21 bytecode to retain compatibility with that
+baseline. To check newer APIs, use e.g. `./gradlew build -PpaperApiVersion=26.2.build.129-stable`.
+These checks compile and run automated tests; they do not substitute for an in-game server test.
+
+See [the compatibility and menu verification notes](docs/menu-compatibility.md) for the update mechanism,
+fix details, and in-game checks.
 
 For additional functionality such as per player/rank permissions and warp limits, you must install 
 [Vault](https://www.spigotmc.org/resources/vault.34315/) as well as a compatible permission and chat

@@ -10,6 +10,9 @@ plugins {
 group = providers.gradleProperty("projectGroup").get()
 version = providers.gradleProperty("projectVersion").get()
 
+// 26.x API artifacts require Java 25; the baseline artifact remains Java 21 compatible.
+val targetJava = if (providers.gradleProperty("paperApiVersion").get().startsWith("26.")) 25 else 21
+
 val localPropertiesProvider = providers.fileContents(layout.projectDirectory.file("local.properties"))
     .asText
     .map { content ->
@@ -52,14 +55,22 @@ repositories {
 }
 
 dependencies {
-    testImplementation(kotlin("test"))
+    testImplementation(kotlin("test-junit5"))
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testImplementation("org.mockito:mockito-core:5.21.0")
+    // Supplied by the server at runtime and used by InventoryFramework's constructors.
+    testRuntimeOnly("commons-lang:commons-lang:2.6")
+    testImplementation("io.papermc.paper:paper-api:${providers.gradleProperty("paperApiVersion").get()}")
+    testImplementation("me.xdrop:fuzzywuzzy:1.4.0")
     compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
-    compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:${providers.gradleProperty("paperApiVersion").get()}")
     compileOnly("org.jetbrains.kotlin:kotlin-stdlib:2.3.0")
     compileOnly("io.insert-koin:koin-core-jvm:4.1.1")
     implementation("co.aikar:idb-core:1.0.0-SNAPSHOT")
     implementation("co.aikar:acf-paper:0.5.1-SNAPSHOT")
     compileOnly("com.zaxxer:HikariCP:7.0.2")
+    // 0.12.1 crashes during GUI construction when scanning zero-argument methods.
+    // Anvils are not used: text entry goes through Paper's dialog API.
     implementation("com.github.stefvanschie.inventoryframework:IF:0.12.0")
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
     compileOnly("me.xdrop:fuzzywuzzy:1.4.0")
@@ -68,18 +79,18 @@ dependencies {
 }
 
 java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(21))
+    toolchain.languageVersion.set(JavaLanguageVersion.of(25))
 }
 
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(25)
     compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_21)
+        jvmTarget.set(JvmTarget.fromTarget(targetJava.toString()))
     }
 }
 
 tasks.withType<JavaCompile>().configureEach {
-    options.release.set(21)
+    options.release.set(targetJava)
 }
 
 tasks.test {
@@ -88,6 +99,10 @@ tasks.test {
 
 tasks.shadowJar {
     archiveClassifier = null
+}
+
+tasks.jar {
+    archiveClassifier.set("plain")
 }
 
 tasks.processResources {
@@ -111,7 +126,7 @@ tasks.processResources {
 
 tasks.register<Copy>("deploy") {
     dependsOn(tasks.shadowJar)
-    from(layout.buildDirectory.dir("libs"))
+    from(tasks.shadowJar.flatMap { it.archiveFile })
     into(getProperty("plugin.server.path"))
     rename { fileName -> "${rootProject.name}-${version}.jar" }
     duplicatesStrategy = DuplicatesStrategy.INCLUDE

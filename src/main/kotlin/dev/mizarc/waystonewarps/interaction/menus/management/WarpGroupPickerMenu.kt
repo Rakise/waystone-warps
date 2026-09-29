@@ -11,6 +11,7 @@ import dev.mizarc.waystonewarps.application.actions.management.AssignWarpGroup
 import dev.mizarc.waystonewarps.domain.warps.Warp
 import dev.mizarc.waystonewarps.interaction.localization.LocalizationKeys
 import dev.mizarc.waystonewarps.interaction.localization.LocalizationProvider
+import dev.mizarc.waystonewarps.interaction.menus.common.restorePage
 import dev.mizarc.waystonewarps.interaction.menus.Menu
 import dev.mizarc.waystonewarps.interaction.menus.MenuNavigator
 import dev.mizarc.waystonewarps.interaction.messaging.PrimaryColourPalette
@@ -37,8 +38,9 @@ class WarpGroupPickerMenu(
     override fun open() {
         val gui = ChestGui(4, localizationProvider.get(player.uniqueId, LocalizationKeys.MENU_WARP_GROUP_PICKER_TITLE))
         gui.setOnTopClick { it.isCancelled = true }
+        gui.setOnTopDrag { it.isCancelled = true }
         gui.setOnBottomClick { guiEvent -> if (guiEvent.click == ClickType.SHIFT_LEFT ||
-            guiEvent.click == ClickType.SHIFT_RIGHT) guiEvent.isCancelled = true }
+            guiEvent.click == ClickType.SHIFT_RIGHT || guiEvent.click == ClickType.DOUBLE_CLICK) guiEvent.isCancelled = true }
 
         val controlsPane = StaticPane(6, 1)
 
@@ -103,6 +105,7 @@ class WarpGroupPickerMenu(
         }
         if (counter > 0) groupPane.addPage(Slot.fromXY(0, 0), currentPagePane)
         if (groups.isEmpty()) groupPane.addPage(Slot.fromXY(0, 0), OutlinePane(9, 3))
+        page = groupPane.restorePage(page)
         gui.addPane(Slot.fromXY(0, 1), groupPane)
 
         // Paginator

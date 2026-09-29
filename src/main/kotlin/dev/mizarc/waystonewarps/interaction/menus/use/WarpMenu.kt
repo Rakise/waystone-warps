@@ -31,7 +31,9 @@ import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import dev.mizarc.waystonewarps.interaction.utils.lore
 import dev.mizarc.waystonewarps.interaction.utils.name
-import me.xdrop.fuzzywuzzy.FuzzySearch
+import dev.mizarc.waystonewarps.interaction.menus.common.menuPages
+import dev.mizarc.waystonewarps.interaction.menus.common.restorePage
+import dev.mizarc.waystonewarps.interaction.menus.common.searchMenuEntries
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import net.kyori.adventure.translation.GlobalTranslator
@@ -69,8 +71,9 @@ class WarpMenu(
         }
         val gui = ChestGui(6, title)
         gui.setOnTopClick { guiEvent -> guiEvent.isCancelled = true }
+        gui.setOnTopDrag { it.isCancelled = true }
         gui.setOnBottomClick { guiEvent -> if (guiEvent.click == ClickType.SHIFT_LEFT ||
-            guiEvent.click == ClickType.SHIFT_RIGHT) guiEvent.isCancelled = true }
+            guiEvent.click == ClickType.SHIFT_RIGHT || guiEvent.click == ClickType.DOUBLE_CLICK) guiEvent.isCancelled = true }
 
         // Add controls pane
         addControlsSection(gui)
@@ -81,22 +84,15 @@ class WarpMenu(
             1 -> getFavouritedWarpAccess.execute(player.uniqueId)
             2 -> getOwnedWarps.execute(player.uniqueId)
             else -> emptyList()
-        }.sortedBy { it.name }
+        }.distinctBy { it.id }.sortedWith(compareBy<Warp> { it.name.lowercase() }.thenBy { it.id })
             .let { list -> if (groupId != null) list.filter { it.groupId == groupId } else list }
 
         // Filter by warp name if specified
-        val filteredWarps = if (warpNameSearch.isNotBlank()) {
-            val playerNames = warps.map { it.name }
-            val searchResults = FuzzySearch.extractAll(warpNameSearch, playerNames)
-                .filter { it.score >= 60 }
-                .take(21)
-            searchResults.mapNotNull { result -> warps.find { it.name == result.string } }
-        } else {
-            warps
-        }
+        val filteredWarps = searchMenuEntries(warps, warpNameSearch) { it.name }
 
         // Display warps
         val warpPane = displayWarps(filteredWarps)
+        page = warpPane.restorePage(page)
         gui.addPane(Slot.fromXY(1, 2), warpPane)
 
         // Add warp paginator
@@ -111,6 +107,7 @@ class WarpMenu(
     override fun passData(data: Any?) {
         if (data is String) {
             warpNameSearch = data
+            page = 1
         }
     }
 
@@ -305,9 +302,7 @@ class WarpMenu(
     }
 
     private fun displayWarps(warps: List<Warp>): PaginatedPane {
-        val playerPane = PaginatedPane(7, 3)
-        var currentPagePane = OutlinePane(7, 3)
-        var playerCounter = 0
+        val items = mutableListOf<GuiItem>()
         val stockLore = listOf(
             localizationProvider.get(player.uniqueId, LocalizationKeys.MENU_WARP_ITEM_WARP_LORE_RIGHT_CLICK)
         )
@@ -320,7 +315,7 @@ class WarpMenu(
         val itemDisplayName = LegacyComponentSerializer.legacySection().serialize(renderedComponent)
 
 
-            for (warp in warps) {
+        for (warp in warps) {
             val warpModel = warp.toViewModel()
             val locationText = warpModel.location?.let { location ->
                 if (configService.worldNameEnabled()) {
@@ -502,23 +497,8 @@ class WarpMenu(
                 }
             }
 
-            // Add player menu item
-            currentPagePane.addItem(guiWarpItem)
-            playerCounter++
-
-            // Check if the current page is full (21 players)
-            if (playerCounter >= 21) {
-                playerPane.addPage(Slot.fromXY(1, 2), currentPagePane)
-                currentPagePane = OutlinePane(7, 3)
-                playerCounter = 0
-            }
+            items.add(guiWarpItem)
         }
-
-        // Add the last page if it's not empty
-        if (playerCounter > 0) {
-            playerPane.addPage(Slot.fromXY(0, 0), currentPagePane)
-        }
-
-        return playerPane
+        return menuPages(items)
     }
 }

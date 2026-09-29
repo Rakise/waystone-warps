@@ -1,6 +1,6 @@
 name: WaystoneWarps
 version: 0.0.0-PLACEHOLDER
-api-version: '1.21'
+api-version: '1.21.8'
 main: dev.mizarc.waystonewarps.WaystoneWarps
 soft-depend: [Towny]
 libraries:
@@ -8,7 +8,7 @@ libraries:
   - org.jetbrains.kotlin:kotlin-stdlib:2.3.0
   - io.insert-koin:koin-core-jvm:4.1.1
   - com.zaxxer:HikariCP:7.0.2
-  - me.xdrop:fuzzywuzzy:1.3.1
+  - me.xdrop:fuzzywuzzy:1.4.0
 permissions:
   waystonewarps.command.warpmenu:
     description: Allows access to the warp menu command

@@ -24,7 +24,8 @@ import dev.mizarc.waystonewarps.interaction.utils.PermissionHelper
 import dev.mizarc.waystonewarps.interaction.utils.createHead
 import dev.mizarc.waystonewarps.interaction.utils.lore
 import dev.mizarc.waystonewarps.interaction.utils.name
-import me.xdrop.fuzzywuzzy.FuzzySearch
+import dev.mizarc.waystonewarps.interaction.menus.common.restorePage
+import dev.mizarc.waystonewarps.interaction.menus.common.searchMenuEntries
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.OfflinePlayer
@@ -56,8 +57,9 @@ class WarpPlayerMenu(private val player: Player, private val menuNavigator: Menu
         // Create player access menu
         val gui = ChestGui(6, localizationProvider.get(player.uniqueId, LocalizationKeys.MENU_WARP_PLAYER_TITLE))
         gui.setOnTopClick { guiEvent -> guiEvent.isCancelled = true }
+        gui.setOnTopDrag { it.isCancelled = true }
         gui.setOnBottomClick { guiEvent -> if (guiEvent.click == ClickType.SHIFT_LEFT ||
-            guiEvent.click == ClickType.SHIFT_RIGHT) guiEvent.isCancelled = true }
+            guiEvent.click == ClickType.SHIFT_RIGHT || guiEvent.click == ClickType.DOUBLE_CLICK) guiEvent.isCancelled = true }
 
         // Add controls pane
         addControlsSection(gui)
@@ -71,18 +73,12 @@ class WarpPlayerMenu(private val player: Player, private val menuNavigator: Menu
         }.filter { it.uniqueId != warp.playerId }.sortedBy { it.name }
 
         // Filter by player name if specified
-        val filteredPlayers = if (playerNameSearch.isNotBlank()) {
-            val playerNames = players.mapNotNull { it.name }
-            val searchResults = FuzzySearch.extractAll(playerNameSearch, playerNames)
-                .filter { it.score >= 60 }
-                .take(21)
-            searchResults.mapNotNull { result -> players.find { it.name == result.string } }
-        } else {
-            players
-        }
+        val filteredPlayers = searchMenuEntries(players, playerNameSearch) { it.name ?: "" }
 
         // Pane of players
         val playerPane = displayPlayers(filteredPlayers, warp, gui)
+        if (playerPane.pages == 0) playerPane.addPage(Slot.fromXY(0, 0), StaticPane(7, 3))
+        page = playerPane.restorePage(page)
         gui.addPane(Slot.fromXY(1, 2), playerPane)
 
         // Add paginator pane
@@ -98,6 +94,7 @@ class WarpPlayerMenu(private val player: Player, private val menuNavigator: Menu
     override fun passData(data: Any?) {
         if (data is String) {
             playerNameSearch = data
+            page = 1
         }
     }
 
