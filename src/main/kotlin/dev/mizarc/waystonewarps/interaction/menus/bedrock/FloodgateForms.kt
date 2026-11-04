@@ -21,7 +21,7 @@ internal class FloodgateForms(
         val form = SimpleForm.builder().title(title).content(content)
         buttons.forEach { form.button(it) }
         form.validResultHandler { response -> action(response.clickedButtonId()) }
-            .closedResultHandler(Runnable { close() }).invalidResultHandler(Runnable { close() })
+            .closedOrInvalidResultHandler(java.util.function.Consumer { _ -> close() })
         if (!send(player, form.build())) close()
     }
 
@@ -30,7 +30,7 @@ internal class FloodgateForms(
         val form = CustomForm.builder().title(title)
             .label(content).input(title, "", value)
             .validResultHandler { response -> action(response.asInput(1) ?: "") }
-            .closedResultHandler(Runnable { close() }).invalidResultHandler(Runnable { close() })
+            .closedOrInvalidResultHandler(java.util.function.Consumer { _ -> close() })
         if (!send(player, form.build())) close()
     }
 
@@ -38,7 +38,7 @@ internal class FloodgateForms(
                          action: (Boolean) -> Unit, close: () -> Unit) {
         val form = ModalForm.builder().title(title).content(title).button1(yes).button2(no)
             .validResultHandler { response -> action(response.clickedFirst()) }
-            .closedResultHandler(Runnable { close() }).invalidResultHandler(Runnable { close() })
+            .closedOrInvalidResultHandler(java.util.function.Consumer { _ -> close() })
         if (!send(player, form.build())) close()
     }
 }

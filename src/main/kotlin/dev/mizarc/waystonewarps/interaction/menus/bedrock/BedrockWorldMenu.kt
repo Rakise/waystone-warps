@@ -12,7 +12,6 @@ import dev.mizarc.waystonewarps.interaction.menus.MenuNavigator
 import dev.mizarc.waystonewarps.interaction.menus.common.ConfirmationMenu
 import dev.mizarc.waystonewarps.interaction.utils.PermissionHelper
 import dev.mizarc.waystonewarps.interaction.utils.getWarpMoveTool
-import org.bukkit.Bukkit
 import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.entity.Player
@@ -30,7 +29,7 @@ class BedrockWorldMenu(private val player: Player, private val navigator: MenuNa
     private fun text(key: String) = localization.get(player.uniqueId, "bedrock.$key")
 
     override fun open() {
-        if (repository.getById(warp.id) == null) { navigator.goBack(); return }
+        if (repository.getById(warp.id) == null) { returnHome(); return }
         val actions = mutableListOf<Pair<String, () -> Unit>>()
         if (player.uniqueId == warp.playerId) actions += text("change_skin") to { showSkins() }
         if (PermissionHelper.canRelocate(player, warp.playerId)) actions += text("move_tool") to {
@@ -50,6 +49,7 @@ class BedrockWorldMenu(private val player: Player, private val navigator: MenuNa
                         (current.playerId == player.uniqueId || player.hasPermission("waystonewarps.bypass.break"))) {
                         // Real Paper break: fires protection events and preserves the existing break counter/drops.
                         player.breakBlock(current.position.toLocation(player.world).block)
+                        if (repository.getById(current.id) == null) returnHome()
                     } else player.sendMessage(text("nearby_required"))
                 })
             }
@@ -60,6 +60,11 @@ class BedrockWorldMenu(private val player: Player, private val navigator: MenuNa
 
     private fun nearby(current: Warp): Boolean = player.world.uid == current.worldId &&
         player.location.distanceSquared(current.position.toLocation(player.world).add(0.5, 0.5, 0.5)) <= 36
+
+    private fun returnHome() {
+        navigator.clearMenuStack()
+        navigator.openMenu(BedrockHomeMenu(player, navigator))
+    }
 
     private fun showSkins() {
         val valid = config.getAllSkinTypes().toSet()
