@@ -67,6 +67,7 @@ dependencies {
     testImplementation("io.papermc.paper:paper-api:${providers.gradleProperty("paperApiVersion").get()}")
     testImplementation("me.xdrop:fuzzywuzzy:1.4.0")
     compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
+    testRuntimeOnly("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
     compileOnly("io.papermc.paper:paper-api:${providers.gradleProperty("paperApiVersion").get()}")
     compileOnly("org.jetbrains.kotlin:kotlin-stdlib:2.3.0")
     compileOnly("io.insert-koin:koin-core-jvm:4.1.1")
