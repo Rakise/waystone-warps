@@ -30,6 +30,7 @@ object MenuPresentation : KoinComponent {
             return
         }
         // Render the current page off-screen. No container is opened for Bedrock.
+        gui.items.forEach { it.applyUUID() }
         gui.update()
         val inventory = when (gui) {
             is ChestGui -> gui.inventory
@@ -59,9 +60,19 @@ object MenuPresentation : KoinComponent {
                 menu is WarpGroupManagementMenu && slot in 18..44 -> "bedrock.delete_group"
                 else -> null
             }
-            val lore = item.item.itemMeta?.lore()?.joinToString("\n") { plain.serialize(it) }.orEmpty()
+            val mouseHints = listOf("menu.warp.item.warp.lore.left_click", "menu.warp.item.warp.lore.right_click",
+                "menu.warp_player.item.player.lore.toggle_whitelist", "menu.warp_player.item.player.lore.revoke_access",
+                "menu.warp_group_management.item.actions").map { text(player, it) }
+            val lore = item.item.itemMeta?.lore()?.map { plain.serialize(it) }
+                ?.filterNot { line -> mouseHints.any { hint -> line.contains(hint) } }?.joinToString("\n").orEmpty()
             if (secondary != null || lore.isNotBlank()) {
-                val buttons = listOfNotNull(text(player, "bedrock.select"), secondary?.let { text(player, it) },
+                val primary = when {
+                    menu is WarpMenu && slot in 18..44 -> text(player, "bedrock.teleport")
+                    menu is WarpPlayerMenu && slot in 18..44 -> text(player, "bedrock.whitelist")
+                    menu is WarpGroupManagementMenu && slot in 18..44 -> text(player, "bedrock.rename")
+                    else -> label(item)
+                }
+                val buttons = listOfNotNull(primary, secondary?.let { text(player, it) },
                     text(player, "bedrock.back"))
                 BedrockSupport.simple(player, navigator, menu, label(item), lore, buttons,
                     onClose = { menu.open() }) { choice ->

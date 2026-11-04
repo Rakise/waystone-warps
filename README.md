@@ -117,23 +117,21 @@ Here are the different permissions you can set:
 | `waystonewarps.teleport_cooldown.<number>` | Sets a player's teleport timer in seconds, for example `waystonewarps.teleport_timer.20` for 20-second cooldown. Lowest matching value wins.     |
 | `waystonewarps.teleport_cooldown.*`           | Allows instant teleportation (zero timer).                                                                                                       |
 
-## Building from Source
+## Paper 26.3 and Bedrock
 
-### Requirements
+This fork targets Paper 26.3 and Java 25. Java players retain inventory menus and native Paper dialogs.
+Floodgate players receive Cumulus forms, including text input, confirmations and administrative operations.
+Start with `/warpmenu`, or interact with waystones and compasses normally.
 
-- Java JDK 21 or newer
-- Git
+Install Floodgate on the Paper backend. When using a proxy, enable `send-floodgate-data: true` on
+proxy Floodgate and use the same `key.pem` on all Floodgate instances. Configure Geyser with Floodgate authentication.
+See [Bedrock setup and feature coverage](docs/bedrock.md).
 
-### Compiling
+## Builds and Releases
 
-```
-git clone https://github.com/mizarc/waystone-warps.git
-cd waystone-warps/
-./gradlew build
-```
-
-The compiled .jar binary can be found in the `build/libs` folder.
-
+Builds, tests and server startup checks run exclusively in [GitHub Actions](https://github.com/Rakise/waystone-warps/actions).
+Every successful `main` revision produces a [Release](https://github.com/Rakise/waystone-warps/releases)
+with the tested plugin JAR and SHA-256 checksum. No local compilation is required.
 ## Support
 
 If you encounter any bugs, crashes, or unexpected behaviour, please [open an issue](https://github.com/mizarc/waystone-warps/issues) in this repository.

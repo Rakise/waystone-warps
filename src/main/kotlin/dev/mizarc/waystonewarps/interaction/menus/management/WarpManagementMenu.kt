@@ -242,6 +242,16 @@ class WarpManagementMenu(private val player: Player, private val menuNavigator: 
         }
         pane.addItem(guiMoveItem, 8, 0)
 
+        if (dev.mizarc.waystonewarps.interaction.menus.bedrock.BedrockSupport.isBedrock(player)) {
+            pane.addItem(GuiItem(ItemStack(Material.NETHER_STAR)
+                .name(localizationProvider.get(player.uniqueId, "bedrock.back"))) { menuNavigator.goBack() }, 2, 0)
+            val worldItem = ItemStack(Material.CRAFTING_TABLE)
+                .name(localizationProvider.get(player.uniqueId, "bedrock.world_edit"))
+            pane.addItem(GuiItem(worldItem) {
+                menuNavigator.openMenu(dev.mizarc.waystonewarps.interaction.menus.bedrock.BedrockWorldMenu(
+                    player, menuNavigator, warp))
+            }, 7, 0)
+        }
         MenuPresentation.show(gui, player, menuNavigator, this)
     }
 
