@@ -1,5 +1,6 @@
 package dev.mizarc.waystonewarps.interaction.menus.use
 
+import dev.mizarc.waystonewarps.interaction.menus.bedrock.MenuPresentation
 import com.github.stefvanschie.inventoryframework.gui.GuiItem
 import com.github.stefvanschie.inventoryframework.gui.type.ChestGui
 import com.github.stefvanschie.inventoryframework.pane.OutlinePane
@@ -113,7 +114,7 @@ class WarpGroupBrowseMenu(
             groupPane.page = page - 1
         }
 
-        gui.show(player)
+        MenuPresentation.show(gui, player, menuNavigator, this)
     }
 
     private fun addPaginator(gui: ChestGui, totalPages: Int, page: Int, updateContent: (Int) -> Unit) {
@@ -146,7 +147,7 @@ class WarpGroupBrowseMenu(
                     currentPage--
                     updateContent(currentPage)
                     updatePaginator()
-                    gui.update()
+                    MenuPresentation.refresh(gui, player, menuNavigator, this)
                 }, 0, 0)
             }
 
@@ -164,7 +165,7 @@ class WarpGroupBrowseMenu(
                     currentPage++
                     updateContent(currentPage)
                     updatePaginator()
-                    gui.update()
+                    MenuPresentation.refresh(gui, player, menuNavigator, this)
                 }, 2, 0)
             }
         }

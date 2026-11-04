@@ -14,7 +14,7 @@ class WarpInfo(val id: UUID, val player: OfflinePlayer, val creationTime: Instan
 
 fun Warp.toViewModel(): WarpInfo {
     val player = Bukkit.getOfflinePlayer(playerId)
-    val material = resolveWarpIcon(icon)
+    val material = Material.getMaterial(this.icon.uppercase()) ?: Material.LODESTONE
     val world = Bukkit.getWorld(worldId)
     val location: Location? = if (world != null) {
         this.position.toLocation(world)
@@ -31,6 +31,3 @@ fun Warp.toViewModel(): WarpInfo {
         icon = material
     )
 }
-
-internal fun resolveWarpIcon(icon: String): Material = Material.matchMaterial(icon)
-    ?.takeIf { it.isItem && !it.isAir } ?: Material.LODESTONE

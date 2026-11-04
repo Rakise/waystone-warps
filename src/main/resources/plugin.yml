@@ -1,8 +1,8 @@
 name: WaystoneWarps
 version: 0.0.0-PLACEHOLDER
-api-version: '1.21.8'
+api-version: '26.3'
 main: dev.mizarc.waystonewarps.WaystoneWarps
-soft-depend: [Towny]
+softdepend: [Towny, floodgate, Geyser-Spigot]
 libraries:
   - org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0
   - org.jetbrains.kotlin:kotlin-stdlib:2.3.0

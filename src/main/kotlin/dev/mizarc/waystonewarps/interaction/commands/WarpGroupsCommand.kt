@@ -25,6 +25,6 @@ class WarpGroupsCommand : BaseCommand(), KoinComponent {
             return
         }
         val menuNavigator = MenuNavigator(player)
-        menuNavigator.openMenu(WarpGroupManagementMenu(player, menuNavigator, localizationProvider))
+        WarpGroupManagementMenu(player, menuNavigator, localizationProvider).open()
     }
 }

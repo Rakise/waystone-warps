@@ -1,5 +1,6 @@
 package dev.mizarc.waystonewarps.interaction.menus.use
 
+import dev.mizarc.waystonewarps.interaction.menus.bedrock.MenuPresentation
 import com.github.stefvanschie.inventoryframework.gui.GuiItem
 import com.github.stefvanschie.inventoryframework.gui.type.HopperGui
 import com.github.stefvanschie.inventoryframework.pane.StaticPane
@@ -119,7 +120,7 @@ class WarpOptionsMenu(
         }
         pane.addItem(guiDeleteItem, 4, 0)
 
-        gui.show(player)
+        MenuPresentation.show(gui, player, menuNavigator, this)
     }
 
     private fun givePlayerLodestoneCompass() {

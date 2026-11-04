@@ -1,6 +1,7 @@
 package dev.mizarc.waystonewarps.interaction.menus.management
 
 import com.destroystokyo.paper.profile.PlayerProfile
+import dev.mizarc.waystonewarps.interaction.menus.bedrock.MenuPresentation
 import com.github.stefvanschie.inventoryframework.gui.GuiItem
 import com.github.stefvanschie.inventoryframework.gui.type.ChestGui
 import com.github.stefvanschie.inventoryframework.gui.type.util.Gui
@@ -88,7 +89,7 @@ class WarpPlayerMenu(private val player: Player, private val menuNavigator: Menu
         }
 
         // Display to GUI
-        gui.show(player)
+        MenuPresentation.show(gui, player, menuNavigator, this)
     }
 
     override fun passData(data: Any?) {
@@ -197,7 +198,7 @@ class WarpPlayerMenu(private val player: Player, private val menuNavigator: Menu
                     currentPage--
                     updateContent(currentPage)
                     updatePaginator()
-                    gui.update()
+                    MenuPresentation.refresh(gui, player, menuNavigator, this)
                 }
             }
             paginatorPane.addItem(guiPrevItem, 0, 0)
@@ -215,7 +216,7 @@ class WarpPlayerMenu(private val player: Player, private val menuNavigator: Menu
                     currentPage++
                     updateContent(currentPage)
                     updatePaginator()
-                    gui.update()
+                    MenuPresentation.refresh(gui, player, menuNavigator, this)
                 }
             }
             paginatorPane.addItem(guiNextItem, 2, 0)
@@ -225,7 +226,7 @@ class WarpPlayerMenu(private val player: Player, private val menuNavigator: Menu
         gui.addPane(Slot.fromXY(6, 0), paginatorPane)
     }
 
-    private fun displayPlayers(players: List<OfflinePlayer>, warp: Warp, gui: Gui): PaginatedPane {
+    private fun displayPlayers(players: List<OfflinePlayer>, warp: Warp, gui: ChestGui): PaginatedPane {
         val playerPane = PaginatedPane(7, 3)
         var currentPagePane = OutlinePane(7, 3)
         var playerCounter = 0
@@ -278,7 +279,7 @@ class WarpPlayerMenu(private val player: Player, private val menuNavigator: Menu
                         }
                         playerItem.lore()
                         playerItem.lore(customLore)
-                        gui.update()
+                        MenuPresentation.refresh(gui, player, menuNavigator, this)
                     }
                 }
 

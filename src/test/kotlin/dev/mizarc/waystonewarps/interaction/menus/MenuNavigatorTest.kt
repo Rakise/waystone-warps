@@ -9,6 +9,31 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class MenuNavigatorTest {
+    @Test
+    fun `old Bedrock page response cannot act after another page is presented`() {
+        val navigator = MenuNavigator(mock(Player::class.java))
+        val menu = RecordingMenu()
+        navigator.openMenu(menu)
+        val first = navigator.beginPresentation()
+        assertTrue(navigator.isCurrent(menu, first))
+        val second = navigator.beginPresentation()
+        assertFalse(navigator.isCurrent(menu, first))
+        assertTrue(navigator.isCurrent(menu, second))
+        navigator.clearMenuStack()
+        assertFalse(navigator.isCurrent(menu, second))
+    }
+
+    @Test
+    fun `returning to the same menu does not revive its old Bedrock response`() {
+        val navigator = MenuNavigator(mock(Player::class.java))
+        val menu = RecordingMenu()
+        navigator.openMenu(menu)
+        val revision = navigator.beginPresentation()
+        navigator.openMenu(RecordingMenu())
+        navigator.goBack()
+        assertTrue(navigator.isCurrent(menu))
+        assertFalse(navigator.isCurrent(menu, revision))
+    }
     private class RecordingMenu : Menu {
         var opens = 0
         var data: Any? = null

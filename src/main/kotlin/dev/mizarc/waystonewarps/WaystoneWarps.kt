@@ -269,7 +269,7 @@ class WaystoneWarps: JavaPlugin() {
 
     fun initialiseLang() {
         val defaultLanguageFilenames = listOf(
-            "en.properties"
+            "en.properties", "pt_br.properties"
         )
 
         // Move languages to the required folder and add readme for override instructions

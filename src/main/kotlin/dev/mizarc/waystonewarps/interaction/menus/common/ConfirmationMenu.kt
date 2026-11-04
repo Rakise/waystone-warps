@@ -8,6 +8,7 @@ import dev.mizarc.waystonewarps.interaction.localization.LocalizationKeys
 import dev.mizarc.waystonewarps.interaction.localization.LocalizationProvider
 import dev.mizarc.waystonewarps.interaction.menus.Menu
 import dev.mizarc.waystonewarps.interaction.menus.MenuNavigator
+import dev.mizarc.waystonewarps.interaction.menus.bedrock.BedrockSupport
 import dev.mizarc.waystonewarps.interaction.messaging.PrimaryColourPalette
 import dev.mizarc.waystonewarps.interaction.utils.lore
 import dev.mizarc.waystonewarps.interaction.utils.name
@@ -27,6 +28,15 @@ class ConfirmationMenu(
     private val localizationProvider: LocalizationProvider by inject()
 
     override fun open() {
+        if (BedrockSupport.isBedrock(player)) {
+            BedrockSupport.confirm(player, menuNavigator, this, title,
+                localizationProvider.get(player.uniqueId, LocalizationKeys.MENU_CONFIRMATION_ITEM_YES_NAME),
+                localizationProvider.get(player.uniqueId, LocalizationKeys.MENU_CONFIRMATION_ITEM_NO_NAME)) {
+                callbackAction()
+                if (menuNavigator.isCurrent(this)) menuNavigator.goBack()
+            }
+            return
+        }
         // Create menu
         val gui = HopperGui(title)
         val pane = StaticPane(3, 1)

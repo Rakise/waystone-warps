@@ -1,5 +1,6 @@
 package dev.mizarc.waystonewarps.interaction.menus.use
 
+import dev.mizarc.waystonewarps.interaction.menus.bedrock.MenuPresentation
 import com.github.stefvanschie.inventoryframework.gui.GuiItem
 import com.github.stefvanschie.inventoryframework.gui.type.ChestGui
 import com.github.stefvanschie.inventoryframework.pane.OutlinePane
@@ -101,7 +102,7 @@ class WarpMenu(
             warpPane.page = page - 1 // Subtract 1 since pages start at 0
         }
 
-        gui.show(player)
+        MenuPresentation.show(gui, player, menuNavigator, this)
     }
 
     override fun passData(data: Any?) {
@@ -270,7 +271,7 @@ class WarpMenu(
                     currentPage--
                     updateContent(currentPage)
                     updatePaginator()
-                    gui.update()
+                    MenuPresentation.refresh(gui, player, menuNavigator, this)
                 }
             }
             paginatorPane.addItem(guiPrevItem, 0, 0)
@@ -290,7 +291,7 @@ class WarpMenu(
                     currentPage++
                     updateContent(currentPage)
                     updatePaginator()
-                    gui.update()
+                    MenuPresentation.refresh(gui, player, menuNavigator, this)
                 }
             }
             paginatorPane.addItem(guiNextItem, 2, 0)

@@ -12,6 +12,7 @@ import dev.mizarc.waystonewarps.interaction.localization.LocalizationKeys
 import dev.mizarc.waystonewarps.interaction.localization.LocalizationProvider
 import dev.mizarc.waystonewarps.interaction.menus.Menu
 import dev.mizarc.waystonewarps.interaction.menus.MenuNavigator
+import dev.mizarc.waystonewarps.interaction.menus.bedrock.BedrockSupport
 import dev.mizarc.waystonewarps.interaction.messaging.PrimaryColourPalette
 import dev.mizarc.waystonewarps.interaction.utils.PermissionHelper
 import dev.mizarc.waystonewarps.interaction.utils.lore
@@ -185,6 +186,34 @@ class WarpIconMenu(
         }
         outputPane.addItem(confirmGuiItem, 0, 0)
         gui.outputComponent.addPane(Slot.fromXY(0, 0), outputPane)
+        if (BedrockSupport.isBedrock(player)) {
+            val candidates = player.inventory.contents.mapIndexedNotNull { index, item ->
+                item?.takeUnless { it.type.isAir }?.let { index to it.clone() }
+            }
+            BedrockSupport.simple(player, menuNavigator, this, title,
+                localizationProvider.get(player.uniqueId, "bedrock.icon_help"),
+                candidates.map { (slot, item) -> "${slot + 1}: ${item.type.name.lowercase().replace('_', ' ')}" } +
+                    localizationProvider.get(player.uniqueId, "bedrock.back"),
+                onClose = { menuNavigator.goBack() }) { index ->
+                if (index == candidates.size) menuNavigator.goBack()
+                else {
+                    val (slot, selected) = candidates[index]
+                    BedrockSupport.confirm(player, menuNavigator, this, title,
+                        localizationProvider.get(player.uniqueId, LocalizationKeys.MENU_COMMON_ITEM_CONFIRM_NAME),
+                        localizationProvider.get(player.uniqueId, "bedrock.back")) {
+                        if (PermissionHelper.canChangeIcon(player, warp.playerId) &&
+                            player.inventory.getItem(slot)?.isSimilar(selected) == true) {
+                            inputPane.addItem(GuiItem(selected), 0, 0)
+                            confirmGuiItem.callAction(org.bukkit.event.inventory.InventoryClickEvent(
+                                player.openInventory, org.bukkit.event.inventory.InventoryType.SlotType.CONTAINER,
+                                0, org.bukkit.event.inventory.ClickType.LEFT,
+                                org.bukkit.event.inventory.InventoryAction.NOTHING))
+                        } else open()
+                    }
+                }
+            }
+            return
+        }
         gui.show(player)
     }
 }

@@ -5,6 +5,7 @@ import dev.mizarc.waystonewarps.interaction.localization.LocalizationKeys
 import dev.mizarc.waystonewarps.interaction.localization.LocalizationProvider
 import dev.mizarc.waystonewarps.interaction.menus.Menu
 import dev.mizarc.waystonewarps.interaction.menus.MenuNavigator
+import dev.mizarc.waystonewarps.interaction.menus.bedrock.BedrockSupport
 import io.papermc.paper.dialog.Dialog
 import io.papermc.paper.registry.data.dialog.ActionButton
 import io.papermc.paper.registry.data.dialog.DialogBase
@@ -33,6 +34,18 @@ class TextInputMenu(
     override fun open() = show(initialValue)
 
     private fun show(value: String, error: String? = null) {
+        if (BedrockSupport.isBedrock(player)) {
+            BedrockSupport.input(player, navigator, this, title,
+                listOfNotNull(description, error).joinToString("\n"), value) { input ->
+                if (input.length > 50) {
+                    show(input.take(50), localization.get(player.uniqueId, "bedrock.input_too_long"))
+                } else {
+                    val message = onSubmit(input)
+                    if (message != null && navigator.isCurrent(this)) show(input, message)
+                }
+            }
+            return
+        }
         val plugin = JavaPlugin.getPlugin(WaystoneWarps::class.java)
         val serializer = LegacyComponentSerializer.legacySection()
         val consumed = AtomicBoolean()

@@ -27,7 +27,7 @@ fun getProperty(key: String): String {
 }
 
 repositories {
-    mavenLocal()
+    maven { url = uri("https://repo.opencollab.dev/main/") }
     mavenCentral()
     maven {
         name = "papermc"
@@ -55,6 +55,9 @@ repositories {
 }
 
 dependencies {
+    compileOnly("org.geysermc.floodgate:api:2.2.5-SNAPSHOT")
+    compileOnly("org.geysermc.cumulus:cumulus:1.1.2")
+    testImplementation("org.geysermc.cumulus:cumulus:1.1.2")
     testImplementation(kotlin("test-junit5"))
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation("org.mockito:mockito-core:5.21.0")

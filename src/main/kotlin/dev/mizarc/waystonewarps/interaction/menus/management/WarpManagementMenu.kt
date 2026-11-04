@@ -1,5 +1,6 @@
 package dev.mizarc.waystonewarps.interaction.menus.management
 
+import dev.mizarc.waystonewarps.interaction.menus.bedrock.MenuPresentation
 import com.github.stefvanschie.inventoryframework.gui.GuiItem
 import com.github.stefvanschie.inventoryframework.gui.type.ChestGui
 import com.github.stefvanschie.inventoryframework.pane.StaticPane
@@ -241,7 +242,7 @@ class WarpManagementMenu(private val player: Player, private val menuNavigator: 
         }
         pane.addItem(guiMoveItem, 8, 0)
 
-        gui.show(player)
+        MenuPresentation.show(gui, player, menuNavigator, this)
     }
 
     private fun givePlayerMoveTool(player: Player) {

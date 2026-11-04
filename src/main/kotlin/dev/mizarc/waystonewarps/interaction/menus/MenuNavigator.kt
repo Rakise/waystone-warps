@@ -14,6 +14,12 @@ class MenuNavigator(private val player: Player) {
         private val activeNavigators = WeakHashMap<Player, WeakReference<MenuNavigator>>()
     }
     private val menuStack = ArrayDeque<Menu>()
+    private var presentation = 0L
+
+    fun beginPresentation(): Long = ++presentation
+    fun currentPresentation(): Long = presentation
+
+    fun isCurrent(menu: Menu, revision: Long): Boolean = presentation == revision && isCurrent(menu)
 
     /**
      * Opens the provided menu for the target player.
@@ -24,6 +30,7 @@ class MenuNavigator(private val player: Player) {
      * @param menu The menu to open.
      */
     fun openMenu(menu: Menu) {
+        presentation++
         activeNavigators[player] = WeakReference(this)
         menuStack.addFirst(menu)
         menu.open()
@@ -68,10 +75,12 @@ class MenuNavigator(private val player: Player) {
      * menu.
      */
     fun clearMenuStack() {
+        presentation++
         menuStack.clear()
     }
 
     private fun navigateBack(data: Any? = null) {
+        presentation++
         if (menuStack.isNotEmpty()) {
             menuStack.removeFirst()
             if (menuStack.isNotEmpty()) {

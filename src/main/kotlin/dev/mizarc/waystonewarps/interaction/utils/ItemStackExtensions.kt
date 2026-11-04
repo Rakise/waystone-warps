@@ -248,12 +248,7 @@ fun ItemStack.applyIconMeta(meta: IconMeta): ItemStack {
         }
     }
 
-    // An empty component can select an unintended model in a resource pack.
-    if (meta.strings.isNotEmpty() || meta.floats.isNotEmpty() || meta.flags.isNotEmpty() || meta.colorsArgb.isNotEmpty()) {
-        this.setData(DataComponentTypes.CUSTOM_MODEL_DATA, builder.build())
-    } else {
-        this.unsetData(DataComponentTypes.CUSTOM_MODEL_DATA)
-    }
+    this.setData(DataComponentTypes.CUSTOM_MODEL_DATA, builder.build())
     return this
 }
 

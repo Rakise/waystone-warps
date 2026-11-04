@@ -13,11 +13,11 @@ import kotlin.test.assertNotNull
 
 class InventoryConstructionTest {
     @Test
-    fun `construct every inventory type used by the plugin on Paper 26_2`() {
+    fun `construct every inventory type used by the plugin on Paper 26_3`() {
         val plugin = mock(Plugin::class.java)
         val manager = mock(PluginManager::class.java)
         mockStatic(Bukkit::class.java).use { bukkit ->
-            bukkit.`when`<String> { Bukkit.getBukkitVersion() }.thenReturn("26.2.build.121-stable")
+            bukkit.`when`<String> { Bukkit.getBukkitVersion() }.thenReturn("26.3.build.230-stable")
             bukkit.`when`<PluginManager> { Bukkit.getPluginManager() }.thenReturn(manager)
             assertNotNull(ChestGui(6, "Warps", plugin))
             assertNotNull(ChestGui(1, "Management", plugin))

@@ -1,5 +1,6 @@
 package dev.mizarc.waystonewarps.interaction.menus.management
 
+import dev.mizarc.waystonewarps.interaction.menus.bedrock.MenuPresentation
 import com.github.stefvanschie.inventoryframework.gui.GuiItem
 import com.github.stefvanschie.inventoryframework.gui.type.ChestGui
 import com.github.stefvanschie.inventoryframework.pane.OutlinePane
@@ -64,7 +65,7 @@ class WarpSkinsMenu(
         // Display list of blocks
         displayBlockList(gui)
 
-        gui.show(player)
+        MenuPresentation.show(gui, player, menuNavigator, this)
     }
 
     private fun displayBlockList(gui: ChestGui) {
