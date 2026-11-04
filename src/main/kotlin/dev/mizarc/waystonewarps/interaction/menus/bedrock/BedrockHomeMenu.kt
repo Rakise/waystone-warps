@@ -27,7 +27,7 @@ class BedrockHomeMenu(private val player: Player, private val navigator: MenuNav
 
     override fun open() {
         val actions = mutableListOf<Pair<String, () -> Unit>>()
-        actions += text("warps") to { navigator.openMenu(WarpMenu(player, navigator, localization)) }
+        actions += text("warps") to { navigator.openMenu(WarpMenu(player, navigator, localization, bedrockAdvanced = true)) }
         actions += text("manage") to { navigator.openMenu(OwnedMenu()) }
         if (player.hasPermission("waystonewarps.create")) actions += text("create") to {
             navigator.openMenu(TextInputMenu(player, navigator, localization, text("create"),

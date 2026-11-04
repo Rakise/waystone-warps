@@ -17,10 +17,11 @@ object BedrockSupport {
     fun isBedrock(player: Player): Boolean = forms?.isBedrock(player) == true
 
     fun simple(player: Player, navigator: MenuNavigator, menu: Menu, title: String,
-               content: String, buttons: List<String>, onClose: () -> Unit = {}, action: (Int) -> Unit) {
+               content: String, buttons: List<String>, icons: List<String?> = emptyList(),
+               onClose: () -> Unit = {}, action: (Int) -> Unit) {
         val guarded = guard(player, navigator, menu)
         forms?.simple(player, title, content, buttons,
-            { index -> guarded { if (index in buttons.indices) action(index) } }, { guarded(onClose) })
+            { index -> guarded { if (index in buttons.indices) action(index) } }, { guarded(onClose) }, icons)
     }
 
     fun input(player: Player, navigator: MenuNavigator, menu: Menu, title: String,
@@ -59,7 +60,7 @@ object BedrockSupport {
 internal interface BedrockForms {
     fun isBedrock(player: Player): Boolean
     fun simple(player: Player, title: String, content: String, buttons: List<String>,
-               action: (Int) -> Unit, close: () -> Unit)
+               action: (Int) -> Unit, close: () -> Unit, icons: List<String?> = emptyList())
     fun input(player: Player, title: String, content: String, value: String,
               action: (String) -> Unit, close: () -> Unit)
     fun confirm(player: Player, title: String, yes: String, no: String,

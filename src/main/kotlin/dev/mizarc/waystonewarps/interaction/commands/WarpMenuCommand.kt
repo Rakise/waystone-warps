@@ -22,7 +22,7 @@ class WarpMenuCommand: BaseCommand(), KoinComponent {
     @Default
     fun onWarp(player: Player, @Optional backCommand: String? = null) {
         val menuNavigator = MenuNavigator(player)
-        if (BedrockSupport.isBedrock(player)) {
+        if (BedrockSupport.isBedrock(player) && backCommand?.equals("advanced", ignoreCase = true) == true) {
             menuNavigator.openMenu(BedrockHomeMenu(player, menuNavigator))
             return
         }

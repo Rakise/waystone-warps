@@ -3,6 +3,8 @@ package dev.mizarc.waystonewarps.interaction.listeners
 import dev.mizarc.waystonewarps.application.services.ConfigService
 import dev.mizarc.waystonewarps.interaction.localization.LocalizationProvider
 import dev.mizarc.waystonewarps.interaction.menus.MenuNavigator
+import dev.mizarc.waystonewarps.interaction.menus.bedrock.BedrockSupport
+import org.bukkit.inventory.EquipmentSlot
 import dev.mizarc.waystonewarps.interaction.menus.use.WarpMenu
 import org.bukkit.Material
 import org.bukkit.event.EventHandler
@@ -18,18 +20,20 @@ class WarpItemListener(private val configService: ConfigService): Listener, Koin
     @EventHandler
     fun onWarpItemClick(event: PlayerInteractEvent) {
         if (!configService.allowWarpsMenuViaCompass()) return
+        if (event.hand == EquipmentSlot.OFF_HAND) return
 
         val player = event.player
         val itemInHand = player.inventory.itemInMainHand
 
         // Ignore if clicking on lodestone
-        if (event.clickedBlock?.type == Material.LODESTONE) {
+        if (event.clickedBlock?.type == Material.LODESTONE && !BedrockSupport.isBedrock(player)) {
             return
         }
 
         // Check if the item is a compass and the action is a right-click
         if (itemInHand.type == Material.COMPASS &&
                 (event.action == Action.RIGHT_CLICK_AIR || event.action == Action.RIGHT_CLICK_BLOCK)) {
+            if (BedrockSupport.isBedrock(player)) event.isCancelled = true
             val menuNavigator = MenuNavigator(player)
             val menu = WarpMenu(event.player, menuNavigator, localizationProvider)
             menuNavigator.openMenu(menu)

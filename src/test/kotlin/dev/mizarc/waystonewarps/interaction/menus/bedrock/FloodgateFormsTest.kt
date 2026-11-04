@@ -11,6 +11,8 @@ import org.geysermc.cumulus.form.impl.modal.ModalFormDefinition
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 
 class FloodgateFormsTest {
     private val player = mock(Player::class.java)
@@ -26,6 +28,44 @@ class FloodgateFormsTest {
         assertEquals(1, selected)
         SimpleFormDefinition.instance().handleFormResponse(sent as SimpleForm, "99")
         assertEquals(1, selected)
+        assertEquals(1, closed)
+    }
+
+    @Test
+    fun `full destination list keeps every button and icon without a page limit`() {
+        val labels = List(127) { "Waystone ${it + 1}" }
+        var selected = -1
+        forms.simple(player, "Waystones", "", labels, { selected = it }, {},
+            icons = List(labels.size) { BedrockIcons.WAYSTONE })
+        val form = sent as SimpleForm
+        assertEquals(labels, form.buttons().map { it!!.text() })
+        form.buttons().forEach { assertNotNull(it!!.image()) }
+        SimpleFormDefinition.instance().handleFormResponse(form, "126")
+        assertEquals(126, selected)
+    }
+
+    @Test
+    fun `missing optional icons do not change button indexes`() {
+        var selected = -1
+        forms.simple(player, "Waystones", "", listOf("Home", "Mine"), { selected = it }, {},
+            icons = listOf(BedrockIcons.WAYSTONE))
+        val form = sent as SimpleForm
+        assertNotNull(form.buttons()[0]!!.image())
+        assertNull(form.buttons()[1]!!.image())
+        SimpleFormDefinition.instance().handleFormResponse(form, "1")
+        assertEquals(1, selected)
+    }
+
+    @Test
+    fun `empty destination list closes without attempting a teleport`() {
+        var selected = -1
+        var closed = 0
+        forms.simple(player, "Waystones", "No waystones yet", emptyList(),
+            { selected = it }, { closed++ })
+        val form = sent as SimpleForm
+        assertEquals(0, form.buttons().size)
+        SimpleFormDefinition.instance().handleFormResponse(form, null)
+        assertEquals(-1, selected)
         assertEquals(1, closed)
     }
 

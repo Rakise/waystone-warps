@@ -6,6 +6,7 @@ import org.geysermc.cumulus.form.CustomForm
 import org.geysermc.cumulus.form.ModalForm
 import org.geysermc.cumulus.form.SimpleForm
 import org.geysermc.cumulus.form.Form
+import org.geysermc.cumulus.util.FormImage
 
 /** Uses the current Cumulus result handlers documented by GeyserMC. */
 internal class FloodgateForms(
@@ -17,9 +18,13 @@ internal class FloodgateForms(
     override fun isBedrock(player: Player) = api.isFloodgatePlayer(player.uniqueId)
 
     override fun simple(player: Player, title: String, content: String, buttons: List<String>,
-                        action: (Int) -> Unit, close: () -> Unit) {
+                        action: (Int) -> Unit, close: () -> Unit, icons: List<String?>) {
         val form = SimpleForm.builder().title(title).content(content)
-        buttons.forEach { form.button(it) }
+        buttons.forEachIndexed { index, label ->
+            val icon = icons.getOrNull(index)
+            if (icon.isNullOrBlank()) form.button(label)
+            else form.button(label, FormImage.Type.PATH, icon)
+        }
         form.validResultHandler { response -> action(response.clickedButtonId()) }
             .closedOrInvalidResultHandler(java.util.function.Consumer { _ -> close() })
         if (!send(player, form.build())) close()

@@ -11,6 +11,7 @@ import dev.mizarc.waystonewarps.infrastructure.mappers.toPosition3D
 import dev.mizarc.waystonewarps.interaction.localization.LocalizationKeys
 import dev.mizarc.waystonewarps.interaction.localization.LocalizationProvider
 import dev.mizarc.waystonewarps.interaction.menus.MenuNavigator
+import dev.mizarc.waystonewarps.interaction.menus.bedrock.BedrockSupport
 import dev.mizarc.waystonewarps.interaction.menus.management.WarpManagementMenu
 import dev.mizarc.waystonewarps.interaction.menus.management.WarpNamingMenu
 import dev.mizarc.waystonewarps.interaction.menus.use.WarpMenu
@@ -86,6 +87,18 @@ class WaystoneInteractListener(private val configService: ConfigService): Listen
             particleLocation.x += 0.5
             particleLocation.y += 0.5
             particleLocation.z += 0.5
+
+            // Normal mobile taps always lead straight to the full destination list.
+            // Discover first so a newly found waystone is already present in that list.
+            if (BedrockSupport.isBedrock(player) && configService.allowWarpsMenuViaWaystone() && !player.isSneaking) {
+                if (!isOwner && warp.accessLevel != WarpAccess.GLOBAL &&
+                    player.hasPermission("waystonewarps.discover") && discoverWarp.execute(player.uniqueId, warp.id)) {
+                    clickedBlock.world.spawnParticle(Particle.TOTEM_OF_UNDYING, particleLocation, 20)
+                    clickedBlock.world.playSound(particleLocation, Sound.BLOCK_AMETHYST_BLOCK_HIT, SoundCategory.BLOCKS, 1.0f, 1.0f)
+                }
+                menuNavigator.openMenu(WarpMenu(player, menuNavigator, localizationProvider))
+                return
+            }
 
             // Waystone owner path.
             if (it.playerId == player.uniqueId) {

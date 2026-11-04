@@ -1,6 +1,12 @@
 package dev.mizarc.waystonewarps.interaction.menus.use
 
 import dev.mizarc.waystonewarps.interaction.menus.bedrock.MenuPresentation
+import dev.mizarc.waystonewarps.interaction.menus.bedrock.BedrockSupport
+import dev.mizarc.waystonewarps.interaction.menus.bedrock.BedrockIcons
+import dev.mizarc.waystonewarps.interaction.menus.bedrock.bedrockWarpDestinations
+import org.bukkit.event.inventory.InventoryAction
+import org.bukkit.event.inventory.InventoryClickEvent
+import org.bukkit.event.inventory.InventoryType
 import com.github.stefvanschie.inventoryframework.gui.GuiItem
 import com.github.stefvanschie.inventoryframework.gui.type.ChestGui
 import com.github.stefvanschie.inventoryframework.pane.OutlinePane
@@ -48,7 +54,8 @@ class WarpMenu(
     private val menuNavigator: MenuNavigator,
     private val localizationProvider: LocalizationProvider,
     private val groupId: UUID? = null,
-    private val groupName: String? = null
+    private val groupName: String? = null,
+    private val bedrockAdvanced: Boolean = false
 ): Menu, KoinComponent {
     private val getPlayerWarpAccess: GetPlayerWarpAccess by inject()
     private val teleportPlayer: TeleportPlayer by inject()
@@ -65,6 +72,10 @@ class WarpMenu(
     private var usableOnly = true  // if true filters out unusable (other world, locked, etc.)
 
     override fun open() {
+        if (BedrockSupport.isBedrock(player) && !bedrockAdvanced) {
+            openBedrockList()
+            return
+        }
         val title = if (groupName != null) {
             localizationProvider.get(player.uniqueId, LocalizationKeys.MENU_WARP_TITLE_GROUPED, groupName)
         } else {
@@ -103,6 +114,44 @@ class WarpMenu(
         }
 
         MenuPresentation.show(gui, player, menuNavigator, this)
+    }
+
+    private fun openBedrockList() {
+        val destinations = bedrockWarpDestinations(
+            getPlayerWarpAccess.execute(player.uniqueId) + getOwnedWarps.execute(player.uniqueId), groupId)
+        val duplicateNames = destinations.groupingBy { it.name }.eachCount()
+        val buttons = destinations.map { warp ->
+            val owner = if ((duplicateNames[warp.name] ?: 0) > 1) warp.toViewModel().player.name else null
+            val cost = if (configService.isTeleportCostEnabled())
+                teleportationService.calculateCost(player.uniqueId, warp) else 0
+            val costLabel = if (cost > 0) localizationProvider.get(player.uniqueId,
+                "bedrock.travel_cost", cost, when (configService.getTeleportCostType()) {
+                    CostType.ITEM -> configService.getTeleportCostItem().lowercase().replace('_', ' ')
+                    CostType.XP -> "XP"
+                    CostType.MONEY -> localizationProvider.get(player.uniqueId, "bedrock.money")
+                }) else null
+            listOfNotNull(warp.name, listOfNotNull(owner, costLabel).takeIf { it.isNotEmpty() }
+                ?.joinToString(" · ")).joinToString("\n")
+        }
+        val title = groupName ?: localizationProvider.get(player.uniqueId, "bedrock.destinations")
+        BedrockSupport.simple(player, menuNavigator, this, title,
+            if (destinations.isEmpty()) localizationProvider.get(player.uniqueId, "bedrock.no_destinations") else "",
+            buttons, icons = destinations.map { BedrockIcons.forMaterial(it.icon) },
+            onClose = { menuNavigator.clearMenuStack() }) { index ->
+            // Reload discovery, ownership, permissions and current warp data before using an old response.
+            val selected = destinations[index]
+            val current = bedrockWarpDestinations(
+                getPlayerWarpAccess.execute(player.uniqueId) + getOwnedWarps.execute(player.uniqueId), groupId)
+                .firstOrNull { it.id == selected.id }
+            if (current == null) {
+                open()
+                return@simple
+            }
+            // Reuse the same teleport/cost/cooldown/denial callbacks as the Java menu.
+            warpItems(listOf(current)).firstOrNull()?.callAction(InventoryClickEvent(
+                player.openInventory, InventoryType.SlotType.CONTAINER, 0,
+                ClickType.LEFT, InventoryAction.NOTHING))
+        }
     }
 
     override fun passData(data: Any?) {
@@ -302,7 +351,9 @@ class WarpMenu(
         gui.addPane(Slot.fromXY(6, 0), paginatorPane)
     }
 
-    private fun displayWarps(warps: List<Warp>): PaginatedPane {
+    private fun displayWarps(warps: List<Warp>): PaginatedPane = menuPages(warpItems(warps))
+
+    private fun warpItems(warps: List<Warp>): List<GuiItem> {
         val items = mutableListOf<GuiItem>()
         val stockLore = listOf(
             localizationProvider.get(player.uniqueId, LocalizationKeys.MENU_WARP_ITEM_WARP_LORE_RIGHT_CLICK)
@@ -353,7 +404,7 @@ class WarpMenu(
             val isLocked = warp.accessLevel == WarpAccess.PRIVATE && !getWhitelistedPlayers.execute(warp.id).contains(player.uniqueId) && player.uniqueId != warp.playerId && !player.hasPermission("waystonewarps.bypass.private_access")
 
             // Skip to next warp if we are filtering
-            if (usableOnly) {
+            if (usableOnly && (!BedrockSupport.isBedrock(player) || bedrockAdvanced)) {
                 if (!hasPermission || isLocked) {
                     continue
                 }
@@ -500,6 +551,6 @@ class WarpMenu(
 
             items.add(guiWarpItem)
         }
-        return menuPages(items)
+        return items
     }
 }

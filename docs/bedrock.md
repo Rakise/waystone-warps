@@ -11,15 +11,31 @@
 
 ## Touch interface
 
-`/warpmenu` opens the mobile home menu for Floodgate players. Compass and waystone interactions
-route to the same mobile renderer. Every existing menu has a form path; no anvil or Java dialog
-is sent to a detected Floodgate player.
+The compass, a normal tap on an existing waystone, and `/warpmenu` open the complete destination
+list for Floodgate players. Destinations appear first with built-in Bedrock texture icons.
+There are no filters, search controls, page numbers, previous/next buttons or extra home screen
+in this travel list. Scroll normally and tap a destination once to teleport. Any configured
+travel cost is shown on its button; existing access, world, cooldown and payment checks still apply.
+Known locked or other-world destinations are not silently hidden by a usable-only filter.
+
+The list includes discovered, global and owned waystones, deduplicated by identity. Equal names
+remain separate, with the owner shown to disambiguate them. Discovering a waystone by tapping
+it happens before the list is displayed. Compass taps on a lodestone work on Bedrock too.
+Server configuration still controls whether compass/waystone menus are enabled; private
+waystone protections and explicit sneaking interactions are preserved.
+
+Advanced functionality remains available through `/warpmenu advanced`, which opens the tools
+home screen. Its Search and filter waystones button retains the full filter/search/options UI.
+`/warpgroups` and existing creation/administration commands remain available. Every existing
+menu still has a form path; no anvil or Java dialog is sent to a detected Floodgate player.
+Java inventory presentation is unchanged. No custom resource pack is required for the icons;
+unmapped Java material/model icons use the native lodestone fallback.
 
 | Function | Bedrock interface |
 | --- | --- |
-| Browse / teleport | Paged list, warp details, Teleport button |
-| Warp search | CustomForm input, clear-search control |
-| Filters | Discovered / favourites / owned; usable-only toggle |
+| Browse / teleport | Complete scrollable list with icons; tap once to travel |
+| Warp search | Advanced tools: CustomForm input, clear-search control |
+| Filters | Advanced tools only: discovered / favourites / owned; usable-only toggle |
 | Options | Explicit Warp options button instead of right click |
 | Favourite / forget / compass | Options form, confirmation for forgetting |
 | Creation / rename | Input form with server validation and editable errors |
@@ -31,7 +47,7 @@ is sent to a detected Floodgate player.
 | Removal | Nearby confirmed normal break steps, preserving protection events and drops |
 | Groups | Browse, create, rename, delete with confirmation, assign / unassign |
 | Invalid worlds | Paged worlds list and confirmed per-world / all removal with command permissions |
-| Back / pagination / empty lists | Touch controls and preserved page state |
+| Back / pagination / empty lists | Empty-state guidance in travel; advanced screens retain navigation |
 
 Form callbacks run once on the server thread. Reopening a menu, navigating away or opening a new
 session invalidates earlier responses. Offline players and changed effective permissions cannot
@@ -52,7 +68,8 @@ still depend on the server's Bedrock resource-pack mappings.
 Only `.github/workflows/ci-release.yml` compiles or runs the server. It builds/tests with Java 25
 against pinned Paper API `26.3.build.230-stable`, then starts real Paper both without Floodgate and
 with Floodgate/Geyser. Form response tests cover selection, Unicode input, cancellation, malformed
-responses and transport failure. Existing tests cover pagination, search and navigation.
+responses, transport failure, 127 visible icon buttons and empty lists. Travel-list tests cover
+0–300 destinations, duplicate names/identities, explicit groups and native icon fallbacks. Existing tests cover pagination, search and navigation.
 Releases require every job to succeed, and include the tested JAR and checksum.
 
 Startup and response tests do not simulate a logged-in Bedrock client. In-game acceptance should

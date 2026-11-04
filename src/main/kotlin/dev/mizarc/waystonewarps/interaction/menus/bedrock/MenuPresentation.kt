@@ -43,7 +43,8 @@ object MenuPresentation : KoinComponent {
             items.firstOrNull { it.isVisible && it.item.isSimilar(stack) }?.let { slot to it }
         }.filter { (_, item) -> label(item).isNotBlank() }
 
-        BedrockSupport.simple(player, navigator, menu, gui.title, "", visible.map { label(it.second) }) { index ->
+        BedrockSupport.simple(player, navigator, menu, gui.title, "", visible.map { label(it.second) },
+            icons = visible.map { BedrockIcons.forMaterial(it.second.item.type.name) }) { index ->
             val (slot, item) = visible[index]
             fun invoke(click: ClickType) {
                 val revision = navigator.currentPresentation()
@@ -75,6 +76,8 @@ object MenuPresentation : KoinComponent {
                 val buttons = listOfNotNull(primary, secondary?.let { text(player, it) },
                     text(player, "bedrock.back"))
                 BedrockSupport.simple(player, navigator, menu, label(item), lore, buttons,
+                    icons = listOfNotNull(BedrockIcons.TELEPORT,
+                        secondary?.let { BedrockIcons.WAYSTONE }, BedrockIcons.BACK),
                     onClose = { menu.open() }) { choice ->
                     when {
                         choice == 0 -> invoke(ClickType.LEFT)
